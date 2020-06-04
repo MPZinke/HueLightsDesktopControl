@@ -16,7 +16,7 @@ public class HueLights
 		URL base = null;
 		try
 		{
-			base = new URL("http://10.0.0.2/api/");
+			base = new URL(PROPERTIES.HueBridgeURLString);
 		}
 		catch(MalformedURLException ex) {}
 		Light light = new Light(4, base);
