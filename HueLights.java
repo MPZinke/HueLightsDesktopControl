@@ -6,8 +6,11 @@ import java.net.*;
 
 
 
-public class Lights
+public class HueLights
 {
+	Properties PROPERTIES = new Properties();
+
+
 	public static void main(String[] args)
 	{
 		URL base = null;
