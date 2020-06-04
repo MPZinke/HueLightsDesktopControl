@@ -10,7 +10,7 @@ import java.lang.System;  //TESTING
 
 public class Light
 {
-	private String _light_id;
+	private String _id;
 
 	private int _brightness;
 	private boolean _is_on;
@@ -20,13 +20,15 @@ public class Light
 
 	Light(String light_id, String url)
 	{
-		_light_id = light_id;
+		_id = light_id;
 		try
 		{
 			_url = new URL(url);
 		}
 		catch(MalformedURLException exception)
-		{}
+		{
+			System.out.println("Failed");
+		}
 	}
 
 
@@ -34,17 +36,8 @@ public class Light
 	{
 		try
 		{
-			HttpURLConnection connection = (HttpURLConnection)_url.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-			while ((inputLine = in.readLine()) != null)
-			{
-				response.append(inputLine);
-			}
-			in.close();
-			System.out.println(inputLine);
-			System.out.println("Check");
+			GetRequest request = new GetRequest(_url);
+			System.out.println(request.send());
 		}
 		catch(IOException exception)
 		{
@@ -65,6 +58,6 @@ public class Light
 
 	public String light_id()
 	{
-		return _light_id;
+		return _id;
 	}
 }
