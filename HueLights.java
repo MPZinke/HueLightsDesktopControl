@@ -1,6 +1,7 @@
 
 // GUI
 import javax.swing.*;
+
 // REQUESTS
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -23,39 +24,28 @@ import java.lang.System;  //TESTING
 
 public class HueLights
 {
-	public static ArrayList<Room> create_rooms(String base_url)
+	public static ArrayList<Room> create_rooms(String base_url) throws MalformedURLException, IOException
 	{
 		ArrayList<Room> rooms = new ArrayList<Room>();
-		try
+
+		GetRequest request = new GetRequest(base_url + "/groups");
+		String result = request.send();
+
+		JSONObject json = new JSONObject(result);
+		// shouldn't happen if Properites data is correct
+		if(json.has("error"))
 		{
-			GetRequest request = new GetRequest(base_url + "/groups");
-			String result = request.send();
+			String error_message = "HueLights::create_rooms: "+json.getJSONObject("error").getString("description");
+			throw new MalformedURLException(error_message);
+		} 
 
-			JSONObject json = new JSONObject(result);
-			for(int x = 1; true; x++)
-			{
-				String id = Integer.toString(x);
-				JSONObject room_json = json.getJSONObject(id);
-
-				if(!room_json.getString("type").equals("Room")) continue;
-
-				String name = room_json.getString("name");
-				JSONArray json_array = room_json.getJSONArray("lights");
-				String[] string_array = new String[json_array.length()];
-				for(int y = 0; y < json_array.length(); y++) string_array[y] = json_array.getString(y);
-
-				rooms.add(new Room(id, name, string_array, base_url));
-			}
-		}
-		catch(MalformedURLException exception)
+		for(int x = 1; json.has(Integer.toString(x)); x++)
 		{
-			// bad URL
+			String id = Integer.toString(x);
+			JSONObject room_json = json.getJSONObject(id);
+
+			if(room_json.getString("type").equals("Room")) rooms.add(new Room(id, base_url));
 		}
-		catch(IOException exception)
-		{
-			// unable to connect
-		}
-		catch(JSONException exception) { /* done adding to rooms */}
 
 		return rooms;
 	}
@@ -63,18 +53,23 @@ public class HueLights
 
 	public static void main(String[] args)
 	{
-		Properties PROPERTIES = new Properties();
-		String url_string = PROPERTIES.HueURLString + PROPERTIES.HueAPIKey;
 
-		ArrayList<Room> rooms = create_rooms(url_string);
-		System.out.println(rooms.size());  //TESTING
+		try
+		{
+			Properties PROPERTIES = new Properties();
+			String url_string = PROPERTIES.HueURLString + PROPERTIES.HueAPIKey;
 
-		for(int x = 0; x < rooms.size(); x++) rooms.get(x).individually_get_lights_that_are_on();
+			ArrayList<Room> rooms = create_rooms(url_string);
 
-
-		// javax.swing.SwingUtilities.invokeLater(new Runnable()
-		// {
-            	Display display = new Display();
-		// });
+	      	Display display = new Display(rooms);
+		}
+		catch(MalformedURLException exception)
+		{
+			// prompt user and end program
+		}
+		catch(IOException exception)
+		{
+			// prompt user and end program
+		}
 	}
 }

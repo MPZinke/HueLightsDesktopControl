@@ -1,8 +1,9 @@
 
 
 // URL
-import java.net.URL;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 // STRING
 import java.io.BufferedReader;
@@ -20,6 +21,18 @@ class Request
 	protected String _previous_result;
 	protected StringBuilder _builder;
 	protected BufferedReader _reader;
+
+
+	protected Request(URL url)
+	{
+		_url = url;
+	}
+
+
+	protected Request(String url) throws MalformedURLException
+	{
+		_url = new URL(url);
+	}
 
 
 	public boolean is_reachable() throws IOException
