@@ -16,20 +16,21 @@ public class Light
 	private String _id;
 	private String _name;
 
+	private int _brightness;
+	private boolean _is_on;
+	private boolean _is_reachable;
+
 	private GetRequest _get_request;
 	private PutRequest _put_request;
 	private URL _url;
 
-	private int _brightness;
-	private boolean _is_on;
-	private boolean _is_reachable;
 
 	Light(String light_id, String url) throws MalformedURLException
 	{
 		_id = light_id;
 
 		_url = new URL(url);
-		_get_request = new GetRequest(_url.toString());
+		_get_request = new GetRequest(_url);
 		_put_request = new PutRequest(_url.toString()+"/state");
 
 		JSONObject json = data();
@@ -50,7 +51,7 @@ public class Light
 		_id = light_id;
 
 		_url = url;
-		_get_request = new GetRequest(_url.toString());
+		_get_request = new GetRequest(_url);
 		_put_request = new PutRequest(_url.toString()+"/state");
 
 		JSONObject json = data();
@@ -114,6 +115,7 @@ public class Light
 			}
 			return json;
 		}
+		// temporary error, so catchable
 		catch(IOException exception)
 		{
 			return null;
@@ -182,7 +184,7 @@ public class Light
 
 	// ————————————————————— SETTERS —————————————————————
 
-	public void set_brightness(int brightness) throws MalformedURLException, IOException
+	public void set_brightness(int brightness) throws IOException
 	{
 		JSONObject json = new JSONObject();
 		json.put("bri", brightness);
@@ -192,7 +194,7 @@ public class Light
 	}
 
 
-	public void off() throws MalformedURLException, IOException
+	public void off() throws IOException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", false);
@@ -202,7 +204,7 @@ public class Light
 	}
 
 
-	public void on() throws MalformedURLException, IOException
+	public void on() throws IOException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);
@@ -212,7 +214,7 @@ public class Light
 	}
 
 
-	public void on(int brightness) throws MalformedURLException, IOException
+	public void on(int brightness) throws IOException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);

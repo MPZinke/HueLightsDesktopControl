@@ -22,21 +22,36 @@ public class Room
 	private String _name;
 	private ArrayList<Light> _lights;
 	private int _light_count;
-	private URL _url;
 
 	private boolean _all_on = false;
 	private boolean _any_on = false;
+	private int _brightness;
+	
+	private GetRequest _get_request;
+	private PutRequest _put_request;
+	private URL _url;
+
 
 	Room(String id, String base_url) throws MalformedURLException, IOException
 	{
 		_id = id;
 		_url = new URL(base_url+"/groups/"+id);
+		_get_request = new GetRequest(_url);
+		_put_request = new PutRequest(_url.toString()+"/action");
 
 		// pull data
 		JSONObject json = data();
 		_name = json.getString("name");
 
-		// pull data: lights
+		this.create_lights(json, base_url);
+
+		// current data
+		_brightness = json.getJSONObject("action").getInt("bri");
+	}
+
+
+	private void create_lights(JSONObject json, String base_url) throws MalformedURLException
+	{
 		JSONArray json_array = json.getJSONArray("lights");
 		_light_count = json_array.length();
 		String[] light_numbers = new String[_light_count];
@@ -61,11 +76,19 @@ public class Room
 
 	// ————————————————————— GETTERS —————————————————————
 
+	public boolean any_on() throws IOException
+	{
+		JSONObject json = data();
+		_any_on = json.getJSONObject("state").getBoolean("any_on");
+
+		return _any_on;
+	}
+
+
 	// do not catch IOExceptions from GetRequest at this stage, because rooms are required for GUI process
 	public JSONObject data() throws MalformedURLException, IOException
 	{
-		GetRequest request = new GetRequest(_url);
-		String result = request.send();
+		String result = _get_request.send();
 
 		JSONObject json = new JSONObject(result);
 		if(json.has("error"))
@@ -106,6 +129,43 @@ public class Room
 
 	// ————————————————————— SETTERS —————————————————————
 
+	public void off() throws IOException
+	{
+		JSONObject json = new JSONObject();
+		json.put("on", false);
+
+		_put_request.send(json);
+	}
+
+
+	public void on() throws IOException
+	{
+		JSONObject json = new JSONObject();
+		json.put("on", true);
+
+		_put_request.send(json);
+	}
+
+
+	public void on(int brightness) throws IOException
+	{
+		JSONObject json = new JSONObject();
+		json.put("on", true);
+		json.put("bri", brightness);
+
+		_put_request.send(json);
+	}
+
+
+	public void set_brightness(int brightness) throws IOException
+	{
+		JSONObject json = new JSONObject();
+		json.put("bri", brightness);
+
+		_put_request.send(json);
+	}
+
+
 	public boolean update() throws MalformedURLException
 	{
 		try
@@ -115,13 +175,10 @@ public class Room
 
 			return false;
 		}
+		// currently unreach able
 		catch(IOException exception)
 		{
 			return false;
 		}
-		// catch(MalformedURLException exception)
-		// {
-		// 	throw exception;
-		// }
 	}
 }
