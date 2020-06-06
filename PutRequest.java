@@ -6,12 +6,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 // STRING
+import java.lang.System;  //TESTING
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+// JSON
+import org.json.*;
+
 public class PutRequest extends Request
 {
+	private DataOutputStream _output;
+
 	PutRequest(URL url)
 	{
 		super(url);
@@ -24,10 +31,18 @@ public class PutRequest extends Request
 	}
 
 
-	public String send() throws IOException
+	public String send(JSONObject json) throws IOException
 	{
 		_connection = (HttpURLConnection) _url.openConnection();
 		_connection.setRequestMethod("PUT");
+		_connection.setDoOutput(true);
+		_connection.setDoInput(true);
+		_output = new DataOutputStream(_connection.getOutputStream());
+		_output.writeBytes(json.toString());
+		_output.flush();
+		_output.close();
+
+		_connection.connect();
 		_response_code = _connection.getResponseCode();
 
 		_reader = new BufferedReader(new InputStreamReader(_connection.getInputStream()));

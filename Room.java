@@ -11,6 +11,8 @@ import org.json.*;
 
 // STRING
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.Collections;
 
 import java.lang.System;  //TESTING
 
@@ -18,14 +20,14 @@ public class Room
 {
 	private String _id;
 	private String _name;
-	private Light[] _lights;
+	private ArrayList<Light> _lights;
 	private int _light_count;
 	private URL _url;
 
 	private boolean _all_on = false;
 	private boolean _any_on = false;
 
-	Room(String id, String base_url) throws MalformedURLException
+	Room(String id, String base_url) throws MalformedURLException, IOException
 	{
 		_id = id;
 		_url = new URL(base_url+"/groups/"+id);
@@ -36,62 +38,56 @@ public class Room
 
 		// pull data: lights
 		JSONArray json_array = json.getJSONArray("lights");
-		String[] light_numbers = new String[json_array.length()];
-		for(int x = 0; x < json_array.length(); x++) light_numbers[x] = json_array.getString(x);
-		_light_count = light_numbers.length;
+		_light_count = json_array.length();
+		String[] light_numbers = new String[_light_count];
+		for(int x = 0; x < _light_count; x++) light_numbers[x] = json_array.getString(x);
 
 		// create lights
-		_lights = new Light[light_numbers.length];
-		for(int x = 0; x < light_numbers.length; x++)
-			_lights[x] = new Light(light_numbers[x], base_url+"/lights/"+light_numbers[x]);
-	}
+		_lights = new ArrayList<Light>();
+		for(int x = 0; x < _light_count; x++)
+			_lights.add(new Light(light_numbers[x], base_url+"/lights/"+light_numbers[x]));
 
-
-	public ArrayList<Light> individually_get_lights_that_are_on() throws MalformedURLException
-	{
-		ArrayList<Light> on_lights = new ArrayList<Light>();
-		for(int x = 0; x < _lights.length; x++)
-			if(_lights[x].is_on()) on_lights.add(_lights[x]);
-
-		return on_lights;
+		// sort by name
+		Collections.sort(_lights, new Comparator<Light>()
+		{
+			@Override
+			public int compare(Light light1, Light light2)
+			{
+				return light1.name().compareToIgnoreCase(light2.name());
+			}
+		});
 	}
 
 
 	// ————————————————————— GETTERS —————————————————————
 
-	public JSONObject data() throws MalformedURLException
+	// do not catch IOExceptions from GetRequest at this stage, because rooms are required for GUI process
+	public JSONObject data() throws MalformedURLException, IOException
 	{
-		try
-		{
-			GetRequest request = new GetRequest(_url);
-			String result = request.send();
+		GetRequest request = new GetRequest(_url);
+		String result = request.send();
 
-			JSONObject json = new JSONObject(result);
-			if(json.has("error"))
-			{
-				String error_message = "Room::data: "+json.getJSONObject("error").getString("description");
-				throw new MalformedURLException(error_message);
-			}
-			return json;
-		}
-		catch(IOException exception)
+		JSONObject json = new JSONObject(result);
+		if(json.has("error"))
 		{
-			return null;
+			String error_message = "Room::data: "+json.getJSONObject("error").getString("description");
+			throw new MalformedURLException(error_message);
 		}
+		return json;
 	}
 
 
 	public Light light(int index)
 	{
-		return _lights[index].copy();
+		return _lights.get(index).copy();
 	}
 
 
 
 	public Light[] lights()
 	{
-		Light[] copy = new Light[_lights.length];
-		for(int x = 0; x < _lights.length; x++) copy[x] = _lights[x].copy();
+		Light[] copy = new Light[_light_count];
+		for(int x = 0; x < _light_count; x++) copy[x] = _lights.get(x).copy();
 		return copy;
 	}
 
@@ -105,5 +101,27 @@ public class Room
 	public String name()
 	{
 		return _name;
+	}
+
+
+	// ————————————————————— SETTERS —————————————————————
+
+	public boolean update() throws MalformedURLException
+	{
+		try
+		{
+			JSONObject json = data();
+			// json.get
+
+			return false;
+		}
+		catch(IOException exception)
+		{
+			return false;
+		}
+		// catch(MalformedURLException exception)
+		// {
+		// 	throw exception;
+		// }
 	}
 }
