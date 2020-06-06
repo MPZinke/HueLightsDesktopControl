@@ -61,14 +61,21 @@ public class HueLights
 
 			ArrayList<Room> rooms = create_rooms(url_string);
 
-	      	Display display = new Display(rooms);
+	      	WindowFrame display = new WindowFrame(rooms);
 		}
 		catch(MalformedURLException exception)
 		{
 			// prompt user and end program
+			System.out.println("MalformedURLException");
 		}
 		catch(IOException exception)
 		{
+			System.out.println("IOException");
+			// prompt user and end program
+		}
+		catch(Exception exception)
+		{
+			System.out.println("Exception");
 			// prompt user and end program
 		}
 	}

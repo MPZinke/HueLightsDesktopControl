@@ -85,6 +85,12 @@ public class Room
 	}
 
 
+	public int brightness()
+	{
+		return _brightness;
+	}
+
+
 	// do not catch IOExceptions from GetRequest at this stage, because rooms are required for GUI process
 	public JSONObject data() throws MalformedURLException, IOException
 	{
