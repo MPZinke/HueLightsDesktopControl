@@ -56,9 +56,7 @@ public class HueLights
 
 		try
 		{
-			Properties PROPERTIES = new Properties();
-			String url_string = PROPERTIES.HueURLString + PROPERTIES.HueAPIKey;
-
+			String url_string = Properties.HueURLString + Properties.HueAPIKey;
 			ArrayList<Room> rooms = create_rooms(url_string);
 
 	      	WindowFrame display = new WindowFrame(rooms);

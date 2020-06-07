@@ -10,6 +10,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+// JSON
+import org.json.*;
+
 
 class Request
 {
@@ -41,5 +44,16 @@ class Request
 		_response_code = _connection.getResponseCode();
 
 		return _response_code == 200;
+	}
+
+
+	public void validate() throws MalformedURLException
+	{
+		JSONObject json = new JSONObject(_previous_result);
+		if(json.has("error"))
+		{
+			String error_message = "Request::validate: "+json.getJSONObject("error").getString("description");
+			throw new MalformedURLException(error_message);
+		}
 	}
 }

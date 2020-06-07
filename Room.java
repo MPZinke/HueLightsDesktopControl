@@ -42,15 +42,19 @@ public class Room
 		// pull data
 		JSONObject json = data();
 		_name = json.getString("name");
+		_any_on = json.getJSONObject("state").getBoolean("any_on");
+		_any_on = json.getJSONObject("state").getBoolean("all_on");
 
 		this.create_lights(json, base_url);
 
 		// current data
-		_brightness = json.getJSONObject("action").getInt("bri");
+		int total = 0;
+		for(int x = 0; x < _lights.size(); x++) total += _lights.get(x).previous_brightness();
+		_brightness = total / _lights.size();
 	}
 
 
-	private void create_lights(JSONObject json, String base_url) throws MalformedURLException
+	private void create_lights(JSONObject json, String base_url) throws IOException, MalformedURLException
 	{
 		JSONArray json_array = json.getJSONArray("lights");
 		_light_count = json_array.length();
@@ -76,7 +80,7 @@ public class Room
 
 	// ————————————————————— GETTERS —————————————————————
 
-	public boolean any_on() throws IOException
+	public boolean any_on() throws IOException, MalformedURLException
 	{
 		JSONObject json = data();
 		_any_on = json.getJSONObject("state").getBoolean("any_on");
@@ -92,7 +96,7 @@ public class Room
 
 
 	// do not catch IOExceptions from GetRequest at this stage, because rooms are required for GUI process
-	public JSONObject data() throws MalformedURLException, IOException
+	public JSONObject data() throws IOException, MalformedURLException
 	{
 		String result = _get_request.send();
 
@@ -108,7 +112,7 @@ public class Room
 
 	public Light light(int index)
 	{
-		return _lights.get(index).copy();
+		return _lights.get(index);
 	}
 
 
@@ -135,56 +139,69 @@ public class Room
 
 	// ————————————————————— SETTERS —————————————————————
 
-	public void off() throws IOException
+	public void brightness(int brightness) throws IOException, MalformedURLException
+	{
+		JSONObject json = new JSONObject();
+		json.put("bri", brightness);
+
+		_put_request.send(json);
+		_put_request.validate();
+	}
+
+
+	public void set(int brightness) throws IOException, MalformedURLException
+	{
+		if(brightness == 0) this.off();
+		else if(this.any_on()) this.brightness(brightness);
+		else this.on(brightness);
+	}
+
+
+	public void off() throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", false);
 
 		_put_request.send(json);
+		_put_request.validate();
 	}
 
 
-	public void on() throws IOException
+	public void on() throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);
 
 		_put_request.send(json);
+		_put_request.validate();
 	}
 
 
-	public void on(int brightness) throws IOException
+	public void on(int brightness) throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);
 		json.put("bri", brightness);
 
 		_put_request.send(json);
+		_put_request.validate();
 	}
 
 
-	public void set_brightness(int brightness) throws IOException
+	public boolean update_room() throws IOException, MalformedURLException
 	{
-		JSONObject json = new JSONObject();
-		json.put("bri", brightness);
+		for(int x = 0; x < _lights.size(); x++) _lights.get(x).update_light();
 
-		_put_request.send(json);
-	}
-
-
-	public boolean update() throws MalformedURLException
-	{
-		try
+		int total = 0;
+		_any_on = false;
+		for(int x = 0; x < _lights.size(); x++)
 		{
-			JSONObject json = data();
-			// json.get
+			Light light = _lights.get(x);
+			total += light.previous_brightness();
+			if(light.is_on()) _any_on = true;
+		}
+		_brightness = total / _lights.size();
 
-			return false;
-		}
-		// currently unreach able
-		catch(IOException exception)
-		{
-			return false;
-		}
+		return false;
 	}
 }

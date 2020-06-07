@@ -25,7 +25,7 @@ public class Light
 	private URL _url;
 
 
-	Light(String light_id, String url) throws MalformedURLException
+	Light(String light_id, String url) throws IOException, MalformedURLException
 	{
 		_id = light_id;
 
@@ -34,19 +34,16 @@ public class Light
 		_put_request = new PutRequest(_url.toString()+"/state");
 
 		JSONObject json = data();
-		if(json != null)
-		{
-			_is_on = json.getJSONObject("state").getBoolean("on");
-			if(!_is_on) _brightness = 0;
-			else _brightness = json.getJSONObject("state").getInt("bri");
+		_is_on = json.getJSONObject("state").getBoolean("on");
+		if(!_is_on) _brightness = 0;
+		else _brightness = json.getJSONObject("state").getInt("bri");
 
-			_is_reachable = json.getJSONObject("state").getBoolean("reachable");
-			_name = json.getString("name");
-		}
+		_is_reachable = json.getJSONObject("state").getBoolean("reachable");
+		_name = json.getString("name");
 	}
 
 
-	Light(String light_id, URL url) throws MalformedURLException
+	Light(String light_id, URL url) throws IOException, MalformedURLException
 	{
 		_id = light_id;
 
@@ -55,18 +52,16 @@ public class Light
 		_put_request = new PutRequest(_url.toString()+"/state");
 
 		JSONObject json = data();
-		if(json != null)
-		{
-			_is_on = json.getJSONObject("state").getBoolean("on");
-			if(!_is_on) _brightness = 0;
-			else _brightness = json.getJSONObject("state").getInt("bri");
+		_is_on = json.getJSONObject("state").getBoolean("on");
+		if(!_is_on) _brightness = 0;
+		else _brightness = json.getJSONObject("state").getInt("bri");
 
-			_is_reachable = json.getJSONObject("state").getBoolean("reachable");
-			_name = json.getString("name");
-		}
+		_is_reachable = json.getJSONObject("state").getBoolean("reachable");
+		_name = json.getString("name");
 	}
 
 
+	// copy constructor
 	Light(String light_id, String name, URL url, int brightness, boolean is_on, boolean is_reachable, 
 	GetRequest get_request, PutRequest put_request)
 	{
@@ -89,37 +84,26 @@ public class Light
 
 	// ————————————————————— GETTERS —————————————————————
 
-	public int brightness() throws MalformedURLException
+	public int brightness() throws IOException, MalformedURLException
 	{
 		JSONObject json = data();
-		if(json != null)
-		{
-			_brightness = json.getJSONObject("state").getInt("bri");
-		}
+		_brightness = json.getJSONObject("state").getInt("bri");
 
 		return _brightness;
 	}
 
 
-	public JSONObject data() throws MalformedURLException
+	public JSONObject data() throws IOException, MalformedURLException
 	{
-		try
-		{
-			String result = _get_request.send();
+		String result = _get_request.send();
 
-			JSONObject json = new JSONObject(result);
-			if(json.has("error"))
-			{
-				String error_message = "Light::data: "+json.getJSONObject("error").getString("description");
-				throw new MalformedURLException(error_message);
-			}
-			return json;
-		}
-		// temporary error, so catchable
-		catch(IOException exception)
+		JSONObject json = new JSONObject(result);
+		if(json.has("error"))
 		{
-			return null;
+			String error_message = "Light::data: "+json.getJSONObject("error").getString("description");
+			throw new MalformedURLException(error_message);
 		}
+		return json;
 	}
 
 
@@ -129,25 +113,19 @@ public class Light
 	}
 
 
-	public boolean is_on() throws MalformedURLException
+	public boolean is_on() throws IOException, MalformedURLException
 	{
 		JSONObject json = data();
-		if(json != null)
-		{
-			_is_on = json.getJSONObject("state").getBoolean("on");
-		}
+		_is_on = json.getJSONObject("state").getBoolean("on");
 
 		return _is_on;
 	}
 
 
-	public boolean is_reachable() throws MalformedURLException
+	public boolean is_reachable() throws IOException, MalformedURLException
 	{
 		JSONObject json = data();
-		if(json != null)
-		{
-			_is_reachable = json.getJSONObject("state").getBoolean("reachable");
-		}
+		_is_reachable = json.getJSONObject("state").getBoolean("reachable");
 
 		return _is_reachable;
 	}
@@ -184,44 +162,71 @@ public class Light
 
 	// ————————————————————— SETTERS —————————————————————
 
-	public void set_brightness(int brightness) throws IOException
+	public void brightness(int brightness) throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("bri", brightness);
 
 		_put_request.send(json);
+		_put_request.validate();
+
 		_brightness = brightness;
 	}
 
 
-	public void off() throws IOException
+	public void off() throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", false);
 
 		_put_request.send(json);
+		_put_request.validate();
+
 		_is_on = false;
 	}
 
 
-	public void on() throws IOException
+	public void on() throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);
 
 		_put_request.send(json);
+		_put_request.validate();
+
 		_is_on = true;
 	}
 
 
-	public void on(int brightness) throws IOException
+	public void on(int brightness) throws IOException, MalformedURLException
 	{
 		JSONObject json = new JSONObject();
 		json.put("on", true);
 		json.put("bri", brightness);
 
 		_put_request.send(json);
+		_put_request.validate();
+
 		_is_on = true;
 		_brightness = brightness;
+	}
+
+
+	public void set(int brightness) throws IOException, MalformedURLException
+	{
+		if(brightness == 0) off();
+		else if(is_on()) this.brightness(brightness);
+		else on(brightness);
+	}
+
+
+	public void update_light() throws IOException, MalformedURLException
+	{
+		JSONObject json = data();
+		_is_on = json.getJSONObject("state").getBoolean("on");
+		if(!_is_on) _brightness = 0;
+		else _brightness = json.getJSONObject("state").getInt("bri");
+
+		_is_reachable = json.getJSONObject("state").getBoolean("reachable");
 	}
 }
