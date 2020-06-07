@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.UIManager;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 // REQUESTS
 import java.net.MalformedURLException;
@@ -42,7 +43,7 @@ public class WindowFrame extends JFrame
 	private ArrayList<Room> _rooms;
 	private JButton[] _room_buttons = new JButton[4];
 
-	WindowFrame(ArrayList<Room> rooms) throws MalformedURLException, IOException, Exception
+	WindowFrame(ArrayList<Room> rooms) throws AWTException, Exception, IOException, MalformedURLException
 	{
 		super("Lights");
 		if(!SystemTray.isSupported()) throw new Exception("Tray is not supported");
@@ -99,7 +100,7 @@ public class WindowFrame extends JFrame
 					}
 					catch(Exception exception)
 					{
-						//TODO: display error
+						showMessageDialog(null, exception.toString());
 					}
 				}
 			});
@@ -146,18 +147,10 @@ public class WindowFrame extends JFrame
 
 	// ————————————————————— ACTIONS —————————————————————
 
-	private void add_to_tray(int state) throws AWTException
+	private void add_to_tray(int state)
 	{
-		if(state == ICONIFIED || state == 7)
-		{
-			_tray.add(_tray_icon);
-			setVisible(false);
-		}
-		else if(state == MAXIMIZED_BOTH || state == NORMAL)
-		{
-			_tray.remove(_tray_icon);
-			setVisible(true);
-		}
+		if(state == ICONIFIED || state == 7) setVisible(false);
+		else if(state == MAXIMIZED_BOTH || state == NORMAL) setVisible(true);
 	}
 
 
@@ -233,28 +226,28 @@ public class WindowFrame extends JFrame
 	}
 
 
-	private void setup_system_tray()
+	private void setup_system_tray() throws AWTException
 	{
 		_tray = SystemTray.getSystemTray();
-		PopupMenu tray_poppup = new PopupMenu();
+		PopupMenu tray_popup = new PopupMenu();
 
 		Function<Void, Void> adjust_fun = value -> show_window();
 		MenuItem menu_adjust = new_menu_item(adjust_fun, "Adjust");
-		tray_poppup.add(menu_adjust);
+		tray_popup.add(menu_adjust);
 
 		Function<Void, Void> on_fun = value -> set_room(Properties.TrayRoomNumber, 128);
 		MenuItem menu_on = new_menu_item(on_fun, Properties.TrayRoomName+" On");
-		tray_poppup.add(menu_on);
+		tray_popup.add(menu_on);
 
 		Function<Void, Void> off_fun = value -> set_room(Properties.TrayRoomNumber, 0);
 		MenuItem menu_off = new_menu_item(off_fun, Properties.TrayRoomName+" Off");
-		tray_poppup.add(menu_off);
+		tray_popup.add(menu_off);
 
 		Function<Void, Void> exit_fun = value -> exit();
 		MenuItem menu_exit = new_menu_item(exit_fun, "Exit");
-		tray_poppup.add(menu_exit);
+		tray_popup.add(menu_exit);
 
-		_tray_icon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("icon.png"), "Lights", tray_poppup);
+		_tray_icon = new TrayIcon(Toolkit.getDefaultToolkit().getImage("icon.png"), "Lights", tray_popup);
 		_tray_icon.setImageAutoSize(true);
 		addWindowStateListener(new WindowStateListener()
 		{
@@ -264,11 +257,13 @@ public class WindowFrame extends JFrame
 				{
 					add_to_tray(e.getNewState());
 				}
-				catch(AWTException exception)
+				catch(Exception exception)
 				{
-					//TODO: display error
+					showMessageDialog(null, exception.toString());
 				}
 			}
 		});
+
+		_tray.add(_tray_icon);
 	}
 }
