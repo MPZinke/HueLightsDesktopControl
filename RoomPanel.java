@@ -63,11 +63,11 @@ public class RoomPanel extends JPanel
 	{
 		JSlider slider = new JSlider(0, 255, current_brightness);
 		slider.setPreferredSize(new Dimension(150, 50));
-		slider.setBackground(new Color(20, 18, 18));
+		slider.setBackground(Properties.Background);
 		TitledBorder border = new TitledBorder(new LineBorder(Properties.BackgroundLight, 8, true), name);
 		border.setTitleColor(Properties.TextColor);
 		slider.setBorder(border);
-		slider.setForeground(Color.darkGray);
+		slider.setForeground(Properties.BackgroundLight);
 		slider.addChangeListener(new ChangeListener()
 		{
 			public void stateChanged(ChangeEvent event)
@@ -161,7 +161,13 @@ public class RoomPanel extends JPanel
 			else if(lights[x].previous_brightness() != _lights_sliders[x].getValue())
 				_lights_sliders[x].setValue(lights[x].previous_brightness());
 
-			if(!lights[x].previous_is_reachable()) _lights_sliders[x].setBackground(new Color(80, 0, 0));
+			if(!lights[x].previous_is_reachable())
+			{
+				String text = _room.light(x).name();
+				TitledBorder border = new TitledBorder(new LineBorder(Properties.Warning, 10, true), text);
+				border.setTitleColor(Properties.TextColor);
+				_lights_sliders[x].setBorder(border);
+			}
 			else _lights_sliders[x].setBackground(Properties.Background);
 		}
 
