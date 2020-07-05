@@ -1,10 +1,10 @@
 
 
 all:
-	javac -cp '.:./org.json.jar' *.java
+	javac -cp 'build:src/org.json.jar' src/*.java -d build
 
 jar:
-	jar cfm HueLights.jar HueLightsMainfest.txt *.class org.json.jar
+	jar -cvmf ./src/manifest.txt HueLights.jar ./build/*.class ./src/org.json.jar
 
 run:
-	java -cp '.:./org.json.jar' HueLights
+	java -cp 'build:src/org.json.jar' -classpath build HueLights
