@@ -53,14 +53,17 @@ public class HueLights
 
 	public static void main(String[] args)
 	{
+		System.out.println("Starting Program");  //TESTING
 		System.setProperty("apple.awt.UIElement", "true");
 
 		try
 		{
+			System.out.print("Creating rooms...");  //TESTING
 			String url_string = Properties.HueURLString + Properties.HueAPIKey;
 			ArrayList<Room> rooms = create_rooms(url_string);
 
 	      	WindowFrame display = new WindowFrame(rooms);
+			System.out.println("DONE");  //TESTING
 		}
 		catch(MalformedURLException exception)
 		{

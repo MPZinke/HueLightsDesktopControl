@@ -3,8 +3,8 @@
 all:
 	javac -cp '.:./org.json.jar' *.java
 
-xlint:
-	javac -cp '.:./org.json.jar' *.java -Xlint
+jar:
+	jar cfm HueLights.jar HueLightsMainfest.txt *.class org.json.jar
 
 run:
 	java -cp '.:./org.json.jar' HueLights
