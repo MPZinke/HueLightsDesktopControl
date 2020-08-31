@@ -1,4 +1,5 @@
 
+
 // GUI
 import javax.swing.*;
 
@@ -20,7 +21,6 @@ import java.io.IOException;
 import org.json.*;
 
 import java.lang.System;  //TESTING
-
 
 public class HueLights
 {
@@ -68,16 +68,16 @@ public class HueLights
 		catch(MalformedURLException exception)
 		{
 			// prompt user and end program
-			System.out.println("MalformedURLException");
+			System.out.println("MalformedURLException: " + exception.getMessage());
 		}
 		catch(IOException exception)
 		{
-			System.out.println("IOException");
+			System.out.println("IOException: " + exception.getMessage());
 			// prompt user and end program
 		}
 		catch(Exception exception)
 		{
-			System.out.println("Exception");
+			System.out.println("Exception: " + exception.getMessage());
 			// prompt user and end program
 		}
 	}

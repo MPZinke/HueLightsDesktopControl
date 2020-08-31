@@ -1,1 +1,1 @@
-javac *.java -cp ".;.\org.json.jar"
+javac src\*.java -cp ".;src\org.json.jar" -d build
